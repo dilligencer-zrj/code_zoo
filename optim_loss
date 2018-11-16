@@ -1,0 +1,3 @@
+def lr_poly(base_lr, iter,max_iter,power):
+    return base_lr*((1-float(iter)/max_iter)**(power))
+# lr_ = lr_poly(base_lr,iter,max_iter,0.9)
