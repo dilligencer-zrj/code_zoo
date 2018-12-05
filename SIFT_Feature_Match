@@ -1,0 +1,83 @@
+# coding=utf-8
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+plt.switch_backend('TkAgg')
+import numpy as np
+from PIL import Image
+plt.switch_backend('TkAgg')
+from skimage.measure import label as Label
+from skimage.measure import regionprops as Region
+
+img0_path='/home/didia/us_data/npydata_2/1508788_0_clean.npy'
+img1_path='/home/didia/us_data/npydata_2/1508788_1_clean.npy'
+ann0_path='/home/didia/us_data/npydata_2/1508788_0_seg.npy'
+ann1_path='/home/didia/us_data/npydata_2/1508788_1_seg.npy'
+
+# 测试
+# img1_gray = cv2.cvtColor(cv2.imread('left_01.png'), cv2.COLOR_BGR2GRAY)
+# img2_gray =cv2.cvtColor(cv2.imread('right_01.png'), cv2.COLOR_BGR2GRAY)
+
+save_dir='/home/zrj/lab_project/184_ultrasonic/save_img/'
+
+img0=np.load(img0_path)
+img1=np.load(img1_path)
+ann0=np.load(ann0_path)
+ann1=np.load(ann1_path)
+
+def drawMatchesKnn_cv2(img1_gray, kp1, img2_gray, kp2, goodMatch,i,j,ymin,xmin,ymax,xmax,y_1, x_1, y_2, x_2):
+    h1, w1 = img1_gray.shape
+    h2, w2 = img2_gray.shape
+
+    vis = np.zeros((max(h1, h2), w1 + w2), np.uint8)
+    vis[:h1, :w1] = img1_gray
+    vis[:h2, w1:w1 + w2] = img2_gray
+
+    p1 = [kpp.queryIdx for kpp in goodMatch]
+    p2 = [kpp.trainIdx for kpp in goodMatch]
+
+    post1 = np.int32([kp1[pp].pt for pp in p1])
+    post2 = np.int32([kp2[pp].pt for pp in p2]) + (w1, 0)
+
+    for (x1, y1), (x2, y2) in zip(post1, post2):
+         if x1 >xmin  and x1 < xmax  and y1 >ymin  and y1 < ymax:
+            # print (x1,y1),(x2-w1,y2)
+            cv2.line(vis, (x1, y1), (x2, y2), (0,255,0))
+
+    cv2.rectangle(vis, (xmin, ymin), (xmax, ymax), (0, 255, 0), 4)
+    cv2.rectangle(vis, (x_1+w1, y_1), (x_2+w1, y_2), (0, 255, 0), 4)
+
+    cv2.imwrite(save_dir+'img0_'+str(i)+'_'+'img1_'+str(j)+'.png',vis)
+
+def bbox_cor(ann):
+    ann_regions = Label(ann)
+    ann_proposal = Region(ann_regions)
+    for proposal in ann_proposal:
+        y1,x1,y2,x2=proposal.bbox
+    return y1,x1,y2,x2
+
+
+for i in range(212,226):
+    for j in range(173,212):
+        img1_gray = img0[i]
+        img2_gray = img1[j]
+        y1, x1, y2, x2= bbox_cor(ann0[i])
+        y_1, x_1, y_2, x_2= bbox_cor(ann1[j])
+        sift =  cv2.xfeatures2d.SIFT_create()  # 建立SIFT生成器
+        kp1, des1 = sift.detectAndCompute(img1_gray, None)  # 检测SIFT特征点，并计算描述子
+        kp2, des2 = sift.detectAndCompute(img2_gray, None)
+
+        # BFmatcher with default parms
+        bf = cv2.BFMatcher(cv2.NORM_L2) # 建立暴力匹配器
+        matches = bf.knnMatch(des1, des2, k=2) # 使用KNN检测来自A、B图的SIFT特征匹配对，K=2
+
+        goodMatch = []
+        for m, n in matches:
+            # 当最近距离跟次近距离的比值小于ratio值时，保留此匹配对
+            # if m.distance < 0.75 * n.distance:
+            goodMatch.append(m)
+
+        drawMatchesKnn_cv2(img1_gray, kp1, img2_gray, kp2, goodMatch,i,j,y1, x1, y2, x2,y_1, x_1, y_2, x_2)
+
+
+
