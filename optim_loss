@@ -1,3 +1,16 @@
+import torch
+
 def lr_poly(base_lr, iter,max_iter,power):
     return base_lr*((1-float(iter)/max_iter)**(power))
 # lr_ = lr_poly(base_lr,iter,max_iter,0.9)
+
+
+def init_optim(optim, params, lr, weight_decay):
+    if optim == 'adam':
+        return torch.optim.Adam(params, lr=lr, weight_decay=weight_decay)
+    elif optim == 'sgd':
+        return torch.optim.SGD(params, lr=lr, momentum=0.9, weight_decay=weight_decay)
+    elif optim == 'rmsprop':
+        return torch.optim.RMSprop(params, lr=lr, momentum=0.9, weight_decay=weight_decay)
+    else:
+        raise KeyError("Unsupported optim: {}".format(optim))
