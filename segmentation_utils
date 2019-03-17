@@ -1,0 +1,137 @@
+# patch split and combine
+
+import numpy as np
+import torch
+from torch import nn
+
+
+class SplitComb(object):
+    def __init__(self, patch_size, patch_margin):
+        self.margin = patch_margin
+        self.side_len = [int(patch_size[0] - patch_margin[0] * 2),
+                         int(patch_size[1] - patch_margin[1] * 2)]
+    def split(self, data):
+        assert (self.side_len[0] > self.margin[0] and self.side_len[1] > self.margin[1])
+        splits = []
+        _, h, w = data.shape
+        
+        nh = int(np.ceil(float(h) / self.side_len[0]))
+        nw = int(np.ceil(float(w) / self.side_len[1]))
+
+        nhw = [nh, nw]
+        padding = [
+            [0, 0],
+            [self.margin[0], nh * self.side_len[0] - h + self.margin[0]],
+            [self.margin[1], nw * self.side_len[1] - w + self.margin[1]]]
+        data = np.pad(data, padding, 'edge')
+        
+                for ih in range(nh):
+            for iw in range(nw):
+                sh = ih * self.side_len[0]
+                eh = (ih + 1) * self.side_len[0] + 2 * self.margin[0]
+                sw = iw * self.side_len[1]
+                ew = (iw + 1) * self.side_len[1] + 2 * self.margin[1]
+
+                split = data[np.newaxis, :, sh:eh, sw:ew]
+                splits.append(split)
+
+        splits = np.concatenate(splits, 0)
+        return splits, nhw, padding
+      
+    def combine(self, splits, nhw, padding):
+        nh, nw = nhw
+        h = nh * self.side_len[0] + self.margin[0] - padding[1][1]
+        w = nw * self.side_len[1] + self.margin[1] - padding[2][1]
+        if splits[0].ndim == 2:
+            output = np.zeros((h, w))
+        elif splits[0].ndim == 3:
+            output = np.zeros((h, w, splits.shape[-1]))
+        
+        idx = 0
+        for ih in range(nh):
+            for iw in range(nw):
+                sh = ih * self.side_len[0]
+                eh = (ih + 1) * self.side_len[0]
+                eh = eh if eh < h else h
+                sw = iw * self.side_len[1]
+                ew = (iw + 1) * self.side_len[1]
+                ew = ew if ew < w else w
+                if splits[0].ndim == 2:
+                    split = splits[idx][
+                            self.margin[0]:self.margin[0] + eh - sh,
+                            self.margin[1]:self.margin[1] + ew - sw]
+                    output[sh:eh, sw:ew] = split
+                elif splits[0].ndim == 3:
+                    split = splits[idx][
+                            self.margin[0]:self.margin[0] + eh - sh,
+                            self.margin[1]:self.margin[1] + ew - sw, :]
+                    output[sh:eh, sw:ew, :] = split
+                idx += 1
+        return output
+
+        
+# coefficient = 2*|X ∩ Y| / |X|+|Y|  Dice Loss = 1 - coefficient    
+class DiceLoss(nn.Module):
+    def __init__(self, **kwargs):
+        super(DiceLoss, self).__init__()
+        self.sigmoid = nn.Sigmoid()
+    
+    def forward(self,output,target):
+        if not isinstance(target,torch.FloatTensor):
+            target = target.float()
+        output = output.view(-1)
+        pred = self.sigmoid(output)
+        target = target.view(-1)
+        smooth = 1.
+        intersection = (pred * target).sum()
+        
+        return 1 - ((2. * intersection + smooth) / (pred.sum() + target.sum() + smooth))
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+
+        
+        
+
