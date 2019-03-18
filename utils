@@ -46,4 +46,11 @@ Write console output to external text file.
          if self.file is not None:
              self.file.close()
             
-            
+def save_checkpoint(state,fpath='checkpoint.pth.tar'):
+    mkdir_if_missing(os.path.dirname(fpath))
+    torch.save(state,fpath)
+    
+    
+    
+    
+    
