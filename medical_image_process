@@ -1,0 +1,13 @@
+import nibabel as nib
+
+# 读取nii文件
+def read_nii(volume_path):
+    nii = nib.load(volume_path)
+    data = nii.get_data()
+    ax_codes = nib.aff2axcodes(nii.affine)
+
+    return data, ax_codes, nii.header, nii.affine
+
+def save_nii(data, save_name, header, affine):
+    new_img = nib.Nifti1Image(data.astype(np.int16), affine, header)
+    nib.save(new_img, save_name)
