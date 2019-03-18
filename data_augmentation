@@ -1,0 +1,41 @@
+    def crop(image, label, patch_size):
+        img_size = image.shape[1:]
+        scale_range = [0.8, 1.2]
+        scale = np.random.rand() * (
+                scale_range[1] - scale_range[0]) + scale_range[0]
+        crop_size = (
+                np.array(patch_size).astype('float') / scale).astype('int')
+
+        start = []
+        for i in range(2):
+            if crop_size[i] > img_size[i]:
+                start.append(np.random.randint(int((img_size[i]-crop_size[i])/2)-1, 0))
+            else:
+                start.append(np.random.randint(0, img_size[i]-crop_size[i]+1))
+
+        pad = [[0, 0]]
+        for i in range(2):
+            left_pad = max(0, -start[i])
+            right_pad = max(0, start[i] + crop_size[i] - img_size[i])
+            pad.append([left_pad, right_pad])
+        crop = image[:,
+               max(start[0], 0):min(start[0] + crop_size[0], img_size[0]),
+               max(start[1], 0):min(start[1] + crop_size[1], img_size[1])]
+        crop = np.pad(crop, pad, 'constant')
+        crop_label = label[max(start[0], 0):min(start[0] + crop_size[0], img_size[0]),
+                     max(start[1], 0):min(start[1] + crop_size[1], img_size[1])]
+        crop_label = np.pad(crop_label, pad[1:], 'constant')
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            crop = zoom(crop, [1, scale, scale], order=1)
+            crop_label = zoom(crop_label, [scale, scale], order=1)
+        newpad = patch_size[0] - crop.shape[1:][0]
+        if newpad < 0:
+            crop = crop[:, :newpad, :newpad]
+            crop_label = crop_label[:newpad, :newpad]
+        elif newpad > 0:
+            pad2 = [[0, 0], [0, newpad], [0, newpad]]
+            crop = np.pad(crop, pad2, 'constant')
+            crop_label = np.pad(crop_label, pad2[1:], 'constant')
+        return crop, crop_label
