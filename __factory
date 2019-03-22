@@ -1,0 +1,28 @@
+"""Create data loader"""
+__factory = {
+    'liver': LiverDataset,  # 此处为定义的数据类
+}
+
+def get_names():
+    return __factory.keys()
+
+def init_data_loader(name, dataset, **kwargs):
+    if name not in __factory.keys():
+        raise KeyError("Unknown data loader: {}".format(name))
+    return __factory[name](dataset, **kwargs)
+
+
+"""Create loss"""
+__factory = {
+    'dice': DiceLoss,
+}
+
+
+def get_names():
+    return __factory.keys()
+
+
+def init_loss(name, **kwargs):
+    if name not in __factory.keys():
+        raise KeyError("Unknown loss: {}".format(name))
+    return __factory[name](**kwargs)
