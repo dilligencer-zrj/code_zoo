@@ -1,4 +1,8 @@
-    def crop(image, label, patch_size):
+from scipy.ndimage import zoom
+from skimage.transform import rotate
+import numpy as np
+
+   def crop(image, label, patch_size):
         img_size = image.shape[1:]
         scale_range = [0.8, 1.2]
         scale = np.random.rand() * (
@@ -39,3 +43,49 @@
             crop = np.pad(crop, pad2, 'constant')
             crop_label = np.pad(crop_label, pad2[1:], 'constant')
         return crop, crop_label
+        
+        
+    def random_rotate(sample, target, angles_range):
+        angles = np.float32(np.random.uniform(*angles_range))
+        rot_sample = sample.copy()
+        rot_target = target.copy()
+        for index in range(3):
+            sample_channel = sample[:, :, index]
+            target_channel = target[:, :, index]
+            sample_channel = rotate(sample_channel, angles, resize=False, preserve_range=True)
+            target_channel = rotate(target_channel, angles, resize=False, preserve_range=True)
+            rot_sample[:, :, index] = sample_channel
+            rot_target[:, :, index] = target_channel
+        return np.float32(rot_sample), np.float32(rot_target) 
+    
+    def flip(sample, target):
+        flip_num = np.random.randint(0, 8)
+        if flip_num == 1:
+            sample = np.flipud(sample)
+            target = np.flipud(target)
+        elif flip_num == 2:
+            sample = np.fliplr(sample)
+            target = np.fliplr(target)
+        elif flip_num == 3:
+            sample = np.rot90(sample, k=1, axes=(1, 0))
+            target = np.rot90(target, k=1, axes=(1, 0))
+        elif flip_num == 4:
+            sample = np.rot90(sample, k=3, axes=(1, 0))
+            target = np.rot90(target, k=3, axes=(1, 0))
+        elif flip_num == 5:
+            sample = np.fliplr(sample)
+            target = np.fliplr(target)
+            sample = np.rot90(sample, k=1, axes=(1, 0))
+            target = np.rot90(target, k=1, axes=(1, 0))
+        elif flip_num == 6:
+            sample = np.fliplr(sample)
+            target = np.fliplr(target)
+            sample = np.rot90(sample, k=3, axes=(1, 0))
+            target = np.rot90(target, k=3, axes=(1, 0))
+        elif flip_num == 7:
+            sample = np.flipud(sample)
+            target = np.flipud(target)
+            sample = np.fliplr(sample)
+            target = np.fliplr(target)
+        return sample, target
+    
