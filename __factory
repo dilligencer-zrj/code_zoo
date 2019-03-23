@@ -26,3 +26,19 @@ def init_loss(name, **kwargs):
     if name not in __factory.keys():
         raise KeyError("Unknown loss: {}".format(name))
     return __factory[name](**kwargs)
+
+"""Create dataset"""
+__factory = {
+    'tumor': Tumor,
+    'tumortest': TumorTest
+}
+
+
+def get_names():
+    return __factory.keys()
+
+
+def init_dataset(name, data_root, config, **kwargs):
+    if name not in __factory.keys():
+        raise KeyError("Unknown dataset: {}".format(name))
+    return __factory[name](data_root, config, **kwargs)
