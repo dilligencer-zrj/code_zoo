@@ -11,3 +11,24 @@ def read_nii(volume_path):
 def save_nii(data, save_name, header, affine):
     new_img = nib.Nifti1Image(data.astype(np.int16), affine, header)
     nib.save(new_img, save_name)
+
+# 读取nrrd文件
+def read_nrrd(volume_path):
+    mapping = {
+        'left-posterior-superior': ('L', 'P', 'S'),
+        "right-anterior-superior": ('R', 'A', 'S'),
+        "left-anterior-superior": ('L', 'A', 'S'),
+
+    }
+    data, header = nrrd.read(volume_path)
+    ax_codes = mapping[header['space']]
+
+    return data, ax_codes, header
+
+# 当spacing 有较大的方差时要进行resample
+def resample(imgs, spacing, new_spacing, order=1):
+    new_shape = np.round(imgs.shape * spacing / new_spacing)
+    true_spacing = spacing * imgs.shape / new_shape
+    resize_factor = new_shape / imgs.shape
+    imgs = zoom(imgs, resize_factor, mode='nearest', order=order)
+    return imgs, true_spacing
