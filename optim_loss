@@ -14,3 +14,6 @@ def init_optim(optim, params, lr, weight_decay):
         return torch.optim.RMSprop(params, lr=lr, momentum=0.9, weight_decay=weight_decay)
     else:
         raise KeyError("Unsupported optim: {}".format(optim))
+
+scheduler = lr_scheduler.StepLR(optimizer, step_size=config.STEP_SIZE, gamma=config.GAMMA)
+scheduler.step()
