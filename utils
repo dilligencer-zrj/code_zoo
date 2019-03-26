@@ -50,11 +50,17 @@ sys.stdout = utils.Logger(
          self.console.close()
          if self.file is not None:
              self.file.close()
-            
+ 
+if use_gpu:
+    state_dict = model.module.state_dict()
+else:
+    state_dict = model.state_dict() 
+    
 def save_checkpoint(state,fpath='checkpoint.pth.tar'):
     mkdir_if_missing(os.path.dirname(fpath))
     torch.save(state,fpath)
     
+
     
     
     
