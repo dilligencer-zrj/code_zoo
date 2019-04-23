@@ -1,0 +1,8 @@
+from sklearn.metrics import accuracy_score, precision_score,recall_score,f1_score
+
+def metrics(preds,label):
+    accuracy = accuracy_score ( preds, label )
+    precision = precision_score(preds,label,average='macro')
+    recall = recall_score ( preds, label, average='macro' )
+    f1 = f1_score(preds, label)
+    return accuracy, precision, recall, f1
