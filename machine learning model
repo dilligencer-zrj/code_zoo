@@ -1,0 +1,294 @@
+from sklearn.model_selection import GridSearchCV
+from sklearn.svm import SVC
+from sklearn import metrics
+import numpy as np
+from sklearn import tree
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier,GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression,SGDClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
+
+def SVM(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = SVC ( )
+        param_grid = [{'C': [1e-3, 1e-2, 1e-1, 1, 10, 100, 1000], 'kernel': ['rbf'], 'gamma': [0.001, 0.0001]},
+                      {'C': [1e-3, 1e-2, 1e-1, 1, 10, 100, 1000], 'kernel': ['linear']}]
+        grid_search = GridSearchCV ( model, param_grid,cv=5,
+                       scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+
+def DCTree(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = tree.DecisionTreeClassifier ( )
+        param_grid = {'max_depth': range(1, 10)}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+
+
+def RF(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = RandomForestClassifier ( )
+        param_grid = {'n_estimators':range(10,71,10),'max_depth':range(3,14,2),'min_samples_split':range(50,201,20),
+                      'min_samples_leaf':range(10,60,10),'max_features':range(3,11,2)}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+def AdaboostClassifier(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = AdaBoostClassifier ( )
+        param_grid = {'n_estimators':[5,10,20,30],'learning_rate':[0.001,0.01,0.1,1]}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+def GBDT(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = GradientBoostingClassifier ( )
+        param_grid = {'n_estimators':[5,10,20,30],'learning_rate':[0.001,0.01,0.1,1],
+                      'max_depth':range(3,14,2),'min_samples_split':range(50,201,20),
+                      'min_samples_leaf':range(10,60,10),'max_features':range(3,11,2)}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+def LG_Classifier(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = LogisticRegression ( )
+        param_grid = {'C':[0.001,0.01,0.1,1,5,10],'solver':['newton-cg','lbfgs','sag'],'multi_class':['ovr','multinomial']}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+
+def SGD(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = SGDClassifier ( )
+        param_grid = {'alpha':[0.1,0.01,0.001,0.0001,0.00001],'l1_ratio':[0.1,0.2,0.3,0.5,0.6,0.8],
+                      'max_iter':[5,10,20,30,40,50,100]}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+
+def KNClassifier(train_data, train_label, valid_data,valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = KNeighborsClassifier ( )
+        param_grid = {'weights': ['uniform','distance'],'algorithm':['auto','ball_tree','kd_tree','brute'],
+                      'n_neighbors':[5,10,20]}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
+
+
+def MLP(train_data, train_label, valid_data, valid_label):
+    scores = ['precision', 'recall']
+    for score in scores:
+        print ( "# Tuning hyper-parameters for %s" % score )
+        model = MLPClassifier ( )
+        param_grid = {'hidden_layer_sizes': [(50,50), (20,20,20)], 'activation': ['identity', 'logistic', 'tanh', 'relu'],
+                      'solver': ['lbfgs', 'sgd', 'adam'],'learning_rate':['invscaling','adaptive'],
+                      'learning_rate_init':[1, 0.1, 0.01, 0.001, 0.0001]}
+        grid_search = GridSearchCV ( model, param_grid, cv=5,
+                                     scoring='%s_macro' % score, n_jobs=8, verbose=1 )
+        grid_search.fit ( train_data, train_label )
+
+        best_parameters = grid_search.best_estimator_.get_params ( )
+        for para, val in list ( best_parameters.items ( ) ):
+            print ( para, val )
+
+        valid_pred = grid_search.predict ( valid_data )
+
+        accuracy_score = metrics.accuracy_score ( valid_label, valid_pred )
+        print ( 'accuracy_score' + '\t' + str ( accuracy_score ) )
+        precision_score = metrics.precision_score ( valid_label, valid_pred, average='macro' )
+        print ( 'precision_score' + '\t' + str ( precision_score ) )
+        recall_score = metrics.recall_score ( valid_label, valid_pred, average='macro' )
+        print ( 'recall_score' + '\t' + str ( recall_score ) )
+        f1_score = metrics.f1_score ( valid_label, valid_pred, average='weighted' )
+        print ( 'f1_score' + '\t' + str ( f1_score ) )
+        print ( '验证集中患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 1 ) ) )
+        print ( '验证集中患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 1] == 1 ) ) )
+        print ( '验证集中不患慢阻肺的人数：' + '\t' + str ( np.sum ( valid_label == 0 ) ) )
+        print ( '验证集中不患慢阻肺的人数的正确人数：' + '\t' + str ( sum ( valid_pred[valid_label == 0] == 0 ) ) )
+        print ( )
