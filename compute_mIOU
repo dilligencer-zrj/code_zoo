@@ -18,8 +18,8 @@ def IOU(pred,target,n_classes = args.num_class ):
 
 #设标签宽W，长H
 def fast_hist(a, b, n):#a是转化成一维数组的标签，形状(H×W,)；b是转化成一维数组的预测特征图，形状(H×W,)；n是类别数目
-    k = (a > 0) & (a <= n) #k是一个一维bool数组，形状(H×W,)；目的是找出标签中需要计算的类别（去掉了背景）
-    return np.bincount(n * a[k].astype(int) + b[k], minlength=n ** 2).reshape(n, n)#np.bincount计算了从0到n**2-1这n**2个数中每个数出现的次数，返回值形状(n, n)
+    k = (a > 0) & (a <= n) #k是一个一维bool数组，形状(H×W,)；目的是找出标签中需要计算的类别（去掉了背景）,假设0是背景
+    return np.bincount(n * a[k].astype(int) + b[k], minlength=n ** 2).reshape(n, n)
 
 
 def per_class_iu(hist):#分别为每个类别（在这里是19类）计算mIoU，hist的形状(n, n)
